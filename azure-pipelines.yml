@@ -4,31 +4,45 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
 
 trigger:
-- master
+  branches:
+    include:
+      - master  # Replace with the branch you want to monitor
 
-pool:
-  vmImage: 'windows-latest'
+pool: Default
 
-variables:
-  solution: '**/*.sln'
-  buildPlatform: 'Any CPU'
-  buildConfiguration: 'Release'
+stages:
+  - stage: Restore
+    jobs:
+      - job: RestoreJob
+        steps:
+          - task: UseDotNet@2
+            inputs:
+              packageType: 'sdk'
+              version: '9.x'  # Use .NET 9.x or any other version you're targeting
+              installationPath: $(Agent.ToolsDirectory)/dotnet
 
-steps:
-- task: NuGetToolInstaller@1
+          - checkout: self  # Ensure repository is checked out early
+            clean: true
 
-- task: NuGetCommand@2
-  inputs:
-    restoreSolution: '$(solution)'
+          - script: dotnet restore
+            displayName: 'Restore dependencies'
 
-- task: VSBuild@1
-  inputs:
-    solution: '$(solution)'
-    msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation="$(build.artifactStagingDirectory)\WebApp.zip" /p:DeployIisAppPath="Default Web Site"'
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+  - stage: Build
+    dependsOn: Restore  # This makes Build depend on the Restore stage
+    jobs:
+      - job: BuildJob
+        steps:
+          - script: dotnet build --configuration Release
+            displayName: 'Build project'
 
-- task: VSTest@2
-  inputs:
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+  - stage: Test
+    dependsOn: Build
+    jobs:
+      - job: TestJob
+        steps:
+    # Step 1: Install .NET SDK
+        - task: UseDotNet@2
+          displayName: 'Install .NET'
+          inputs:
+            packageType: 'sdk'
+            version: '9.0.x'
