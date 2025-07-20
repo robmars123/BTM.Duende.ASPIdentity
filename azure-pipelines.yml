@@ -1,0 +1,48 @@
+# ASP.NET Core (.NET Framework)
+# Build and test ASP.NET Core projects targeting the full .NET Framework.
+# Add steps that publish symbols, save build artifacts, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+
+trigger:
+  branches:
+    include:
+      - master  # Replace with the branch you want to monitor
+
+pool: Default
+
+stages:
+  - stage: Restore
+    jobs:
+      - job: RestoreJob
+        steps:
+          - task: UseDotNet@2
+            inputs:
+              packageType: 'sdk'
+              version: '9.x'  # Use .NET 9.x or any other version you're targeting
+              installationPath: $(Agent.ToolsDirectory)/dotnet
+
+          - checkout: self  # Ensure repository is checked out early
+            clean: true
+
+          - script: dotnet restore
+            displayName: 'Restore dependencies'
+
+  - stage: Build
+    dependsOn: Restore  # This makes Build depend on the Restore stage
+    jobs:
+      - job: BuildJob
+        steps:
+          - script: dotnet build --configuration Release
+            displayName: 'Build project'
+
+  - stage: Test
+    dependsOn: Build
+    jobs:
+      - job: TestJob
+        steps:
+    # Step 1: Install .NET SDK
+        - task: UseDotNet@2
+          displayName: 'Install .NET'
+          inputs:
+            packageType: 'sdk'
+            version: '9.0.x'
