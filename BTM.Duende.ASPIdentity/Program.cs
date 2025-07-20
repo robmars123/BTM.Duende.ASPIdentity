@@ -30,6 +30,7 @@ try
         return;
     }
 
+    app.UseStaticFiles();
     app.Run();
 }
 catch(HostAbortedException)
