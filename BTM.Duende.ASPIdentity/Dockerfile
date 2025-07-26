@@ -1,29 +1,33 @@
-# Base image for running the app
+# Stage 1: Base runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 WORKDIR /app
 
-EXPOSE 8080
-EXPOSE 8081
+# Expose standard HTTP and HTTPS ports
+EXPOSE 80
+EXPOSE 443
 
-# Build stage
+# Stage 2: Build and publish
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
-
 WORKDIR /src
 
-# Copy the CSPROJ and restore dependencies
+# Copy project file and restore dependencies
 COPY BTM.Duende.ASPIdentity.csproj ./
 RUN dotnet restore BTM.Duende.ASPIdentity.csproj
 
-# Copy everything else
+# Copy the full source and publish
 COPY . ./
+RUN dotnet publish BTM.Duende.ASPIdentity.csproj -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
-# Build and publish
-RUN dotnet build BTM.Duende.ASPIdentity.csproj -c Release -o bin/Release/net9.0/publish /p:UseAppHost=false
-RUN dotnet publish BTM.Duende.ASPIdentity.csproj -c Release -o bin/Release/net9.0/publish /p:UseAppHost=false
-# Final image
+# Stage 3: Final runtime image
 FROM base AS final
 WORKDIR /app
-COPY bin/Release/net9.0/publish/. .
 
+# Copy published output from build stage
+COPY --from=build /app/publish .
+
+# Optional: Force HTTPS binding
+ENV ASPNETCORE_URLS="https://+:443"
+
+# Start the application
 ENTRYPOINT ["dotnet", "BTM.Duende.ASPIdentity.dll"]

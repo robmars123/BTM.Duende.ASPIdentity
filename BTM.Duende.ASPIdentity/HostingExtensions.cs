@@ -14,6 +14,17 @@ internal static class HostingExtensions
     {
         builder.Services.AddRazorPages();
 
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("MyPolicy", builder =>
+            {
+                builder.WithOrigins("https://localhost:7282")  // replace with your frontend's origin
+                       .AllowAnyHeader()
+                       .AllowAnyMethod()
+                       .AllowCredentials();
+            });
+        });
+
         builder.Services.AddDbContext<IdentityManagementDbContext>(options =>
             options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -70,6 +81,8 @@ internal static class HostingExtensions
         {
             app.UseDeveloperExceptionPage();
         }
+
+        app.UseHttpsRedirection();
 
         app.UseStaticFiles();
         app.UseRouting();
