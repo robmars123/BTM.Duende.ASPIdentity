@@ -65,3 +65,7 @@ GO
 
 
 3. docker run -d --name duende-server --network btm-network -p 5001:443 -e "ConnectionStrings__DefaultConnection=Server=sqlserver2022,1433;Database=BTM.Account.Database;User Id=sa;Password=Password@123;Encrypt=True;TrustServerCertificate=True;" your/btm-duende
+
+
+Local Host SQL
+59105

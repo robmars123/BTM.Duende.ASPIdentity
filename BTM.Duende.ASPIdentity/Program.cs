@@ -11,6 +11,8 @@ try
 {
     var builder = WebApplication.CreateBuilder(args);
 
+    string connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
     builder.WebHost.ConfigureKestrel((context, options) =>
     {
         options.Configure(context.Configuration.GetSection("Kestrel"));
@@ -34,6 +36,8 @@ try
         Log.Information("Done seeding database. Exiting.");
         return;
     }
+
+    app.MapGet("/debug-connectionstring", () => connectionString);
 
     app.UseStaticFiles();
     app.Run();
