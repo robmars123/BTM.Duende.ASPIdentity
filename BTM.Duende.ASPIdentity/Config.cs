@@ -61,7 +61,8 @@ new ApiResource[]
                         IdentityServerConstants.StandardScopes.OpenId,
                         IdentityServerConstants.StandardScopes.Profile,
                         "roles",
-                        "AccountAPI.fullaccess",//clients should match these scopes
+                        "AccountAPI.fullaccess",//gains access to AccountAPI
+                        "ProductsAPI.fullaccess", //gains access to ProductsAPI
                         "offline_access"
                     },
                     ClientSecrets =
